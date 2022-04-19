@@ -3,6 +3,7 @@ name: Rust
 on:
   push:
     branches: [ master ]
+    tags: [ "*" ]
   pull_request:
     branches: [ master ]
 
@@ -17,3 +18,41 @@ jobs:
     - name: Build
       run: cargo build --verbose
     
+    - run: ls
+    
+    - name: Upload the Release binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: apiBuild
+        path: target/debug/api
+
+  
+  package-release:
+    if: contains(github.ref, '/tags/')
+
+    name: Package and create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set output
+      id: vars
+      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
+    - name: Download the Release binary
+      uses: actions/download-artifact@v2
+      with:
+        name: apiBuild
+        
+    - name: Create GitHub release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: RustAPI ${{ steps.vars.outputs.tag }}
+        body_path: release-notes.md
+        files: |
+          api
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
