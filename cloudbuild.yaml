@@ -1,0 +1,9 @@
+steps:
+# Build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build','-t','gcr.io/fase2-sopes1/rust-api','.']
+# Push to the container registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push','gcr.io/fase2-sopes1/rust-api']
+options:
+ logging: CLOUD_LOGGING_ONLY
